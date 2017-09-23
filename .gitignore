@@ -1,0 +1,5 @@
+# Build artifacts
+*.py[cod]
+
+# Ignore sample client configs
+samples/client_config.json
