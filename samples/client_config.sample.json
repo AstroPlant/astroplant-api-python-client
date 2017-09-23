@@ -1,0 +1,9 @@
+{
+    "api": {
+        "root": "[[INSERT API ROOT HERE]]"
+    },
+    "auth": {
+        "serial": "[[INSERT KIT SERIAL HERE]]",
+        "secret": "[[INSERT SECRET HERE]]"
+    }
+}
