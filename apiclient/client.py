@@ -1,7 +1,14 @@
 import requests
 from urllib.parse import urljoin
+import datetime
 import json
 import jwt
+
+#: The number of seconds before token expiration when a refresh is required
+REFRESH_BEFORE_EXPIRY_IN_SECONDS = 60.0
+
+#: The number of seconds before token expiration where a refresh is still attempted
+REFRESH_BEFORE_EXPIRY_CUTOFF_IN_SECONDS = 3.0
 
 class AuthenticationError(Exception):
     pass
@@ -16,7 +23,10 @@ class Client(object):
         :param root_url: The url of the root of the API.
         """
         self.root_url = root_url
-        self.authenticated = False
+
+        self.token = None
+        self.token_data = None
+        self.token_exp = None
 
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
@@ -29,7 +39,7 @@ class Client(object):
         :param payload: The payload as a dictionary.
         """
 
-        return self.session.post(url, json.dumps(payload)).json()
+        return self.session.post(url, json.dumps(payload))
 
     def authenticate(self, serial, secret):
         """
@@ -45,13 +55,67 @@ class Client(object):
         self.auth_secret = secret
 
         payload = {'username': serial, 'password': secret}
-        result = self._post(urljoin(self.root_url, 'auth-token-obtain/'), payload)
+        result = self._post(urljoin(self.root_url, 'auth-token-obtain/'), payload).json()
 
         if 'token' in result:
-            self.token = result['token']
-            self.token_data = jwt.decode(self.token, verify = False)
+            self._process_token(result['token'])
         else:
             if 'non_field_errors' in result:
                 raise AuthenticationError("API error: %s" % result['non_field_errors'])
             else:
                 raise AuthenticationError("Could not authenticate.")
+
+    def _verify_token(self, token):
+        """
+        Verifies a token on the API.
+
+        :param token: The token to verify.
+        :return: A boolean indicating whether the token is valid.
+        """
+        payload = {'token': token}
+        result = self._post(urljoin(self.root_url, 'auth-token-verify/'), payload)
+        return result.status_code == 200
+
+    def _process_token(self, token):
+        """
+        Processes a JWT token.
+
+        :param token: The JWT token.
+        """
+        self.token = token
+        self.token_data = jwt.decode(self.token, verify = False)
+        self.token_exp = datetime.datetime.fromtimestamp(int(self.token_data['exp']))
+
+    def needs_reauthentication(self):
+        """
+        Test whether the client requires reauthentication.
+
+        :return: Boolean indicating whether the client needs to reauthenticate.
+        """
+        
+        diff = self.token_exp - datetime.datetime.now()
+        return diff.seconds < REFRESH_BEFORE_EXPIRY_IN_SECONDS
+
+    def can_refresh(self):
+        """
+        Test whether the client can refresh the current token.
+
+        :return: Boolean indicating whether the client can refresh the current token.
+        """
+
+        diff = self.token_exp - datetime.datetime.now()
+        return diff.seconds > REFRESH_BEFORE_EXPIRY_CUTOFF_IN_SECONDS
+
+    def is_authenticated(self, verify = False):
+        """
+        Test whether the client is authenticated.
+
+        :param verify: Verifies the authentication state with the API.
+        :return: Boolean indicating whether the client is authenticated.
+        """
+
+        if not verify:
+            diff = self.token_exp - datetime.datetime.now()
+            return diff.seconds > 0
+        else:
+            return self._verify_token(self.token)
