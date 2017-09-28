@@ -14,9 +14,8 @@ def main(argv):
     # Test whether the client is authenticated
     print("Client is authenticated: %s" % client.is_authenticated(verify = True))
 
-
-    print("Authenticating...")
     # Authenticate
+    print("Authenticating...")
     client.authenticate(conf['auth']['serial'], conf['auth']['secret'])
 
     # Test authentication
