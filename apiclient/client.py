@@ -13,6 +13,9 @@ REFRESH_BEFORE_EXPIRY_CUTOFF_IN_SECONDS = 3.0
 class AuthenticationError(Exception):
     pass
 
+class TokenRefreshError(Exception):
+    pass
+
 class Client(object):
     """
     AstroPlant API Client class implementing methods to interact with the AstroPlant API.
@@ -55,15 +58,53 @@ class Client(object):
         self.auth_secret = secret
 
         payload = {'username': serial, 'password': secret}
-        result = self._post(urljoin(self.root_url, 'auth-token-obtain/'), payload).json()
+        result = self._post(urljoin(self.root_url, 'auth-token-obtain/'), payload)
+        data = result.json()
 
-        if 'token' in result:
-            self._process_token(result['token'])
+        if result.status_code == 200 and 'token' in data:
+            self._process_token(data['token'])
         else:
-            if 'non_field_errors' in result:
-                raise AuthenticationError("API error: %s" % result['non_field_errors'])
+            if 'non_field_errors' in data:
+                raise AuthenticationError("API error: %s" % data['non_field_errors'])
             else:
                 raise AuthenticationError("Could not authenticate.")
+
+    def _refresh_authentication(self):
+        """
+        Refresh the authentication token.
+
+        Raises an TokenRefreshError if it cannot refresh the token.
+        """
+        payload = {'token': token}
+        result = self._post(urljoin(self.root_url, 'auth-token-verify/'), payload)
+        data = result.json()
+
+        if result.status_code == 200 and 'token' in result:
+            self._process_token(result['token'])
+        else: 
+            if 'non_field_errors' in result:
+                raise TokenRefreshError("API error: %s" % result['non_field_errors'])
+            else:
+                raise TokenRefreshError("Could not refresh authentication token.")
+
+    def _reauthenticate(self):
+        """
+        Reauthenticate to the API.
+
+        Attempts to refresh the authentication token,
+        and falls back on username/password authentication
+        if it cannot refresh.
+        """
+        if self._can_refresh():
+            # Attempt to refresh
+            try:
+                self._refresh_authentication()
+                return
+            except:
+                pass
+
+        # If we cannot refresh, or refresh failed, reauthenticate
+        self.authenticate(self.auth_serial, self.auth_secret)
 
     def _verify_token(self, token):
         """
@@ -86,7 +127,7 @@ class Client(object):
         self.token_data = jwt.decode(self.token, verify = False)
         self.token_exp = datetime.datetime.fromtimestamp(int(self.token_data['exp']))
 
-    def needs_reauthentication(self):
+    def _needs_reauthentication(self):
         """
         Test whether the client requires reauthentication.
 
@@ -96,7 +137,7 @@ class Client(object):
         diff = self.token_exp - datetime.datetime.now()
         return diff.seconds < REFRESH_BEFORE_EXPIRY_IN_SECONDS
 
-    def can_refresh(self):
+    def _can_refresh(self):
         """
         Test whether the client can refresh the current token.
 
