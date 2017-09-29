@@ -2,6 +2,7 @@ import requests
 from urllib.parse import urljoin
 import datetime
 import json
+import websocket
 import jwt
 
 #: The number of seconds before token expiration when a refresh is required
@@ -21,12 +22,14 @@ class Client(object):
     AstroPlant API Client class implementing methods to interact with the AstroPlant API.
     """
 
-    def __init__(self, root_url):
+    def __init__(self, root_url, websocket_url):
         """
         :param root_url: The url of the root of the API.
         """
         self.root_url = root_url
+        self.websocket_url = websocket_url
 
+        self.ws = websocket.WebSocket()
         self.token = None
         self.token_data = None
         self.token_exp = None
@@ -160,3 +163,7 @@ class Client(object):
             return diff.seconds > 0
         else:
             return self._verify_token(self.token)
+
+    def _open_websocket(self):
+        auth_header = ["Authorization: JWT %s" % self.token]
+        self.ws.connect(self.websocket_url, header=auth_header)
