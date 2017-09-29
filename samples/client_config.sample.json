@@ -2,6 +2,9 @@
     "api": {
         "root": "[[INSERT API ROOT HERE]]"
     },
+    "websockets": {
+        "url": "[[INSERT WEBSOCKET URL HERE]]"
+    },
     "auth": {
         "serial": "[[INSERT KIT SERIAL HERE]]",
         "secret": "[[INSERT SECRET HERE]]"

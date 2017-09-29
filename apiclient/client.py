@@ -165,5 +165,27 @@ class Client(object):
             return self._verify_token(self.token)
 
     def _open_websocket(self):
-        auth_header = ["Authorization: JWT %s" % self.token]
-        self.ws.connect(self.websocket_url, header=auth_header)
+        auth_header = {'HTTP_AUTHORIZATION': "JWT %s" % self.token}
+        self.ws.connect(self.websocket_url + "?token=%s" % self.token, header=auth_header)
+
+    def publish_measurement(self, sensor, value):
+        """
+        Publish a measurement over websockets.
+
+        :param sensor: The sensor to send the measurement for.
+        :param value: The value to send.
+        """
+
+        message = {
+            'stream': 'measurements',
+            'payload': {
+                'action': 'publish',
+                'measurement': {
+                    'sensor_id': sensor,
+                    'date_time': datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"),
+                    'value': value
+                }
+            }
+        }
+
+        self.ws.send(json.dumps(message))
