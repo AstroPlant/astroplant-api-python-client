@@ -1,5 +1,8 @@
 # Build artifacts
 *.py[cod]
 
+# Egg
+*.egg-info
+
 # Ignore sample client configs
 samples/client_config.json

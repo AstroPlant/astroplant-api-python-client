@@ -1,15 +1,16 @@
 import json
 
 import sys
-import samples.config
-import apiclient
+import config
+import astroplant_client
+import examples.config
 
 def main(argv):
     # Read configuration file
-    conf = samples.config.read_config()
+    conf = examples.config.read_config()
 
     # Set up client
-    client = apiclient.Client(conf['api']['root'], conf['websockets']['url'])
+    client = astroplant_client.Client(conf['api']['root'], conf['websockets']['url'])
 
     # Test whether the client is authenticated
     print("Client is authenticated: %s" % client.is_authenticated(verify = True))
