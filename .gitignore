@@ -5,4 +5,4 @@
 *.egg-info
 
 # Ignore sample client configs
-samples/client_config.json
+examples/client_config.json
