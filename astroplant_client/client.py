@@ -165,7 +165,6 @@ class Client(object):
             return self._verify_token(self.token)
 
     def _open_websocket(self):
-        auth_header = {'HTTP_AUTHORIZATION': "JWT %s" % self.token}
         self.ws.connect(self.websocket_url + "?token=%s" % self.token, header=auth_header)
 
     def publish_measurement(self, sensor, value):
@@ -181,8 +180,8 @@ class Client(object):
             'payload': {
                 'action': 'publish',
                 'measurement': {
-                    'sensor_id': sensor,
-                    'date_time': datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S"),
+                    'sensor_type': sensor,
+                    'date_time': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
                     'value': value
                 }
             }
