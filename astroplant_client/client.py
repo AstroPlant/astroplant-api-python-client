@@ -165,7 +165,7 @@ class Client(object):
             return self._verify_token(self.token)
 
     def _open_websocket(self):
-        self.ws.connect(self.websocket_url + "?token=%s" % self.token, header=auth_header)
+        self.ws.connect(self.websocket_url + "?token=%s" % self.token)
 
     def publish_measurement(self, sensor, value):
         """
