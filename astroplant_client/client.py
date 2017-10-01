@@ -176,7 +176,7 @@ class Client(object):
         """
 
         message = {
-            'stream': 'measurements',
+            'stream': 'measurements-publish',
             'payload': {
                 'action': 'publish',
                 'measurement': {
