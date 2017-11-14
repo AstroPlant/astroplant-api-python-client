@@ -220,7 +220,7 @@ class Client(object):
     def _open_websocket(self):
         self.ws.connect(self.websocket_url + "?token=%s" % self.token)
 
-    def publish_measurement(self, sensor, value):
+    def publish_measurement(self, measurement):
         """
         Publish a measurement over websockets.
 
@@ -233,9 +233,11 @@ class Client(object):
             'payload': {
                 'action': 'publish',
                 'measurement': {
-                    'sensor_type': sensor,
-                    'date_time': datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
-                    'value': value
+                    'peripheral': measurement.get_peripheral().get_name(),
+                    'physical_quantity': measurement.get_physical_quantity(),
+                    'physical_unit': measurement.get_physical_unit(),
+                    'date_time': measurement.get_date_time().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    'value': measurement.get_value()
                 }
             }
         }
