@@ -46,12 +46,12 @@ class Client(object):
         return wrapper
 
     @authentication_required
-    def get(self, url):
-        return self._get(url)
+    def get(self, relative_url):
+        return self._get(self.root_url + relative_url)
 
     @authentication_required
-    def post(self, url, payload):
-        return self._post(url, payload)
+    def post(self, relative_url, payload):
+        return self._post(self.root_url + relative_url, payload)
 
     def _get(self, url):
         return self.session.get(url)
