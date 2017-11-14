@@ -62,7 +62,10 @@ class Client(object):
         :param relative_url: The url relative to the root url to make the get request to.
         """
 
-        return self._get(self.root_url + relative_url)
+        response = self._get(self.root_url + relative_url)
+        if response.text:
+            response.decoded = json.loads(response.text)
+        return response
 
     @authentication_required
     def post(self, relative_url, payload):
@@ -73,7 +76,10 @@ class Client(object):
         :param payload: The payload as a dictionary.
         """
 
-        return self._post(self.root_url + relative_url, payload)
+        response = self._post(self.root_url + relative_url, payload)
+        if response.text:
+            response.decoded = json.loads(response.text)
+        return response
 
     def _get(self, url):
         """
