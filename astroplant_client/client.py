@@ -64,7 +64,7 @@ class Client(object):
 
         response = self._get(self.root_url + relative_url)
         if response.text:
-            response.decoded = json.loads(response.text)
+            response.body = json.loads(response.text)
         return response
 
     @authentication_required
@@ -78,7 +78,7 @@ class Client(object):
 
         response = self._post(self.root_url + relative_url, payload)
         if response.text:
-            response.decoded = json.loads(response.text)
+            response.body = json.loads(response.text)
         return response
 
     def _get(self, url):
