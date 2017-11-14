@@ -38,6 +38,12 @@ class Client(object):
         self.session.headers.update({'Content-Type': 'application/json'})
 
     def authentication_required(func):
+        """
+        Decorator to enforce the client is authenticated.
+
+        :param func: The function to wrap.
+        """
+
         def wrapper(*args):
             self = args[0]
             if self._needs_reauthentication():
@@ -47,13 +53,31 @@ class Client(object):
 
     @authentication_required
     def get(self, relative_url):
+        """
+        Make a get request to the specified relative url.
+
+        :param relative_url: The url relative to the root url to make the get request to.
+        """
+
         return self._get(self.root_url + relative_url)
 
     @authentication_required
     def post(self, relative_url, payload):
+        """
+        Make a post request to the specified relative url with the given payload.
+
+        :param url: The url relative to the root url to make the post request to.
+        :param payload: The payload as a dictionary.
+        """
+
         return self._post(self.root_url + relative_url, payload)
 
     def _get(self, url):
+        """
+        Make a get request to the specified url.
+
+        :param url: The url to make the get request to.
+        """
         return self.session.get(url)
 
     def _post(self, url, payload):
