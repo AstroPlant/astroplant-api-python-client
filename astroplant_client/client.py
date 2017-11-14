@@ -4,6 +4,7 @@ import datetime
 import json
 import websocket
 import jwt
+from . import path
 
 #: The number of seconds before token expiration when a refresh is required
 REFRESH_BEFORE_EXPIRY_IN_SECONDS = 60.0
@@ -36,6 +37,8 @@ class Client(object):
 
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
+
+        self.configuration_path = path.ConfigurationPath(self)
 
     def authentication_required(func):
         """
