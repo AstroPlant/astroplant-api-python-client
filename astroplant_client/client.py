@@ -37,6 +37,25 @@ class Client(object):
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
 
+    def authentication_required(func):
+        def wrapper(*args):
+            self = args[0]
+            if self._needs_reauthentication():
+                self._reauthenticate()
+            return func(*args)
+        return wrapper
+
+    @authentication_required
+    def get(self, url):
+        return self._get(url)
+
+    @authentication_required
+    def post(self, url, payload):
+        return self._post(url, payload)
+
+    def _get(self, url):
+        return self.session.get(url)
+
     def _post(self, url, payload):
         """
         Make a post request to the specified url with the given payload.
@@ -129,6 +148,7 @@ class Client(object):
         self.token = token
         self.token_data = jwt.decode(self.token, verify = False)
         self.token_exp = datetime.datetime.fromtimestamp(int(self.token_data['exp']))
+        self.session.headers.update({'Authorization': 'JWT %s' % self.token})
 
     def _needs_reauthentication(self):
         """
