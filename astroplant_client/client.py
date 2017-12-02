@@ -136,7 +136,7 @@ class Client(object):
 
         if result.status_code == 200 and 'token' in result:
             self._process_token(result['token'])
-        else: 
+        else:
             if 'non_field_errors' in result:
                 raise TokenRefreshError("API error: %s" % result['non_field_errors'])
             else:
@@ -189,7 +189,7 @@ class Client(object):
 
         :return: Boolean indicating whether the client needs to reauthenticate.
         """
-        
+
         diff = self.token_exp - datetime.datetime.now()
         return diff.seconds < REFRESH_BEFORE_EXPIRY_IN_SECONDS
 
@@ -232,6 +232,7 @@ class Client(object):
             'stream': 'measurements-publish',
             'payload': {
                 'action': 'publish',
+                'measurement_type': measurement.get_measurement_type(),
                 'measurement': {
                     'peripheral': measurement.get_peripheral().get_name(),
                     'physical_quantity': measurement.get_physical_quantity(),
