@@ -8,6 +8,7 @@ setup(name='astroplant-client',
       author='AstroPlant',
       author_email='thomas@kepow.org',
       url='https://astroplant.io',
-      packages=['astroplant_client',],
+      packages=['astroplant_client'],
+	  install_requires=['requests', 'pyjwt', 'websocket-client']
      )
 
