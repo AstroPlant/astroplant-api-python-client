@@ -31,6 +31,7 @@ class Client(object):
         self.websocket_url = websocket_url
 
         self.ws = websocket.WebSocket()
+        self.ws_nonce = 0
         self.token = None
         self.token_data = None
         self.token_exp = None
@@ -218,7 +219,8 @@ class Client(object):
             return self._verify_token(self.token)
 
     def _open_websocket(self):
-        self.ws.connect(self.websocket_url + "?token=%s" % self.token)
+        url = (self.websocket_url + "kit/?token=%s") % self.token
+        self.ws.connect(url)
 
     def publish_measurement(self, measurement):
         """
@@ -229,7 +231,8 @@ class Client(object):
         """
 
         message = {
-            'stream': 'measurements-publish',
+            'stream': 'publish-measurement',
+            'nonce': self.ws_nonce,
             'payload': {
                 'action': 'publish',
                 'measurement_type': measurement.get_measurement_type(),
@@ -242,5 +245,7 @@ class Client(object):
                 }
             }
         }
+        
+        self.ws_nonce += 1
 
         self.ws.send(json.dumps(message))
