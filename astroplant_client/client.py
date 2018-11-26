@@ -218,6 +218,7 @@ class Client(object):
         else:
             return self._verify_token(self.token)
 
+    @authentication_required
     def _open_websocket(self):
         url = (self.websocket_url + "kit/?token=%s") % self.token
         self.ws.connect(url)
